@@ -1,0 +1,20 @@
+{
+  "name": "multi-threading_demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+ "scripts": {
+    "dev": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.2.1",
+    "p-queue": "^9.3.0",
+    "piscina": "^5.2.0",
+    "poolifier": "^5.3.2",
+    "prom-client": "^15.1.3"
+  }
+}
