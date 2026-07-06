@@ -1,15 +1,8 @@
-import { parentPort, workerData } from 'node:worker_threads';
-import { createHash } from 'node:crypto';
-
-try {
-  const result = hashBuffer(workerData.payload);
-  parentPort.postMessage({ status: 'ok', result });
-} catch (error) {
-  parentPort.postMessage({ status: 'error', message: error.message });
+ import { parentPort } from 'node:worker_threads';
+ 
+let result = 0;
+for (let i = 0; i < 10000000000; i++) {
+    result++;
 }
 
-function hashBuffer(payload) {
-  const hash = createHash('sha256');
-  hash.update(payload, 'utf8');
-  return hash.digest('hex');
-}
+parentPort.postMessage(result);
