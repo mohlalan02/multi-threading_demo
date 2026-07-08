@@ -3,16 +3,20 @@ import express from 'express';
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
 app.get('/non-blocking', (req, res) => {
-  res.status(200).send('This route is responsive when the event loop is free.');
+  const startedAt = Date.now();
+
+  const durationMs = Date.now() - startedAt;
+
+  res.status(200).json({
+    message: 'This route is non-blocking.',
+    durationMs,
+  });
 });
 
 app.get('/blocking', (req, res) => {
   const startedAt = Date.now();
+
   let result = 0;
 
   for (let i = 0; i < 10_000_000_000; i++) {
@@ -22,7 +26,7 @@ app.get('/blocking', (req, res) => {
   const durationMs = Date.now() - startedAt;
 
   res.status(200).json({
-    message: 'CPU-bound task completed on the main thread',
+    message: 'Task completed without worker',
     result,
     durationMs,
   });
