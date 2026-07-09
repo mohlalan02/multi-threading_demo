@@ -7,7 +7,9 @@ const port = process.env.PORT || 3000;
 const WORKER_COUNT = 4;
 const TOTAL_COUNT = 10_000_000_000;
 
-const pool = new WorkerPool(WORKER_COUNT);
+const MAX_QUEUE_SIZE = 8;
+
+const pool = new WorkerPool(WORKER_COUNT, MAX_QUEUE_SIZE);
 
 app.get('/non-blocking', (req, res) => {
   res.status(200).send('This page is non-blocking.');

@@ -1,10 +1,11 @@
 import { Worker } from 'node:worker_threads';
 
 export class WorkerPool {
-  constructor(size) {
+  constructor(size, maxQueueSize) {
     this.workers = [];
     this.freeWorkers = [];
     this.taskQueue = [];
+    this.maxQueueSize = maxQueueSize;
 
     for (let i = 0; i < size; i++) {
       const worker = new Worker(new URL('./worker.js', import.meta.url));
@@ -30,6 +31,11 @@ export class WorkerPool {
 
   runTask(data) {
     return new Promise((resolve, reject) => {
+      if (this.taskQueue.length >= this.maxQueueSize) {
+        reject(new Error('Server is busy. Please try again later.'));
+        return;
+      }
+
       this.taskQueue.push({ data, resolve, reject });
       this.runNextTask();
     });
