@@ -50,8 +50,8 @@ export class WorkerPool {
       return;
     }
 
-    const worker = this.freeWorkers.pop();
-    const task = this.taskQueue.shift();
+    const worker = this.freeWorkers.pop();  //select all available workers from the pool
+    const task = this.taskQueue.shift(); // oldest waiting is the first to be processed (FIFO)
 
     worker.currentTask = task;
     worker.postMessage(task.data);
