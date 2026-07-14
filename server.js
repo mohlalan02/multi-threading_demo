@@ -35,6 +35,50 @@ async function startServer() {
     res.json(user);
   });
 
+  app.delete("/users/:id", async (req, res) => {
+    const result = await users.deleteOne({
+      _id: new ObjectId(req.params.id)
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+      res.json({
+        message: "User deleted successfully"
+      });
+  });
+
+  app.patch("/users/:id", async (req, res) => {
+    const updatedUser = {
+      name: req.body.name,
+      email: req.body.email,
+      cellphone: req.body.cellphone,
+      role: req.body.role
+    };
+
+    const result = await users.updateOne(
+      {
+        _id: new ObjectId(req.params.id)
+      },
+      {
+        $set: updatedUser
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    res.json({
+      message: "User updated successfully"
+    });
+  });
+
   app.post("/users", async (req, res) => {
     const newUser = {
       name: req.body.name,
