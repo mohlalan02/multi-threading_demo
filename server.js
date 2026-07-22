@@ -1,99 +1,17 @@
 import "dotenv/config";
 import express from "express";
-import { MongoClient, ObjectId } from "mongodb";
+import { connectDb } from "./db.js";
+import usersRouter from "./routes/users.js";
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 
-const mongoUri = process.env.MONGODB_URI;
-const databaseName = process.env.DATABASE_NAME;
-
-const client = new MongoClient(mongoUri);
+app.use("/users", usersRouter);
 
 async function startServer() {
-  await client.connect();
-
-  const db = client.db(databaseName);
-  const users = db.collection("users");
-
-  app.get("/users", async (req, res) => {
-    const result = await users.find().toArray();
-    res.json(result);
-  });
-
-  app.get("/users/:id", async (req, res) => {
-    const user = await users.findOne({
-      _id: new ObjectId(req.params.id)
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json(user);
-  });
-
-  app.delete("/users/:id", async (req, res) => {
-    const result = await users.deleteOne({
-      _id: new ObjectId(req.params.id)
-    });
-
-    if (result.deletedCount === 0) {
-      return res.status(404).json({
-        message: "User not found"
-      });
-    }
-
-      res.json({
-        message: "User deleted successfully"
-      });
-  });
-
-  app.patch("/users/:id", async (req, res) => {
-    const updatedUser = {
-      name: req.body.name,
-      email: req.body.email,
-      cellphone: req.body.cellphone,
-      role: req.body.role
-    };
-
-    const result = await users.updateOne(
-      {
-        _id: new ObjectId(req.params.id)
-      },
-      {
-        $set: updatedUser
-      }
-    );
-
-    if (result.matchedCount === 0) {
-      return res.status(404).json({
-        message: "User not found"
-      });
-    }
-
-    res.json({
-      message: "User updated successfully"
-    });
-  });
-
-  app.post("/users", async (req, res) => {
-    const newUser = {
-      name: req.body.name,
-      email: req.body.email,
-      role: req.body.role,
-      createdAt: new Date().toISOString()
-    };
-
-    const result = await users.insertOne(newUser);
-
-    res.status(201).json({
-      _id: result.insertedId,
-      ...newUser
-    });
-  });
+  await connectDb();
 
   app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
