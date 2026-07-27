@@ -1,6 +1,8 @@
 import { ObjectId } from "mongodb";
 import { getUsersCollection } from "../db.js";
 
+import { publishEvent } from "../events/eventPublisher.js";
+
 export async function findAllUsers() {
   const users = getUsersCollection();
 
@@ -25,10 +27,19 @@ export async function insertUser(userData) {
 
   const result = await users.insertOne(newUser);
 
-  return {
+  const createdUser = {
     _id: result.insertedId,
     ...newUser
   };
+
+  await publishEvent("UserCreated", {
+    userId: createdUser._id.toString(),
+    name: createdUser.name,
+    email: createdUser.email,
+    role: createdUser.role
+  });
+
+  return createdUser;
 }
 
 export async function updateUserById(id, userData) {
