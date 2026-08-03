@@ -19,6 +19,11 @@ export async function connectDb() {
   if (!db) {
     await client.connect();
     db = client.db(databaseName);
+
+    await db.collection("users").createIndex(
+      { email: 1 },
+      { unique: true }
+    );
   }
 
   return db;

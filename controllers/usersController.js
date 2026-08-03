@@ -40,14 +40,21 @@ export async function createUser(req, res) {
     });
   }
 
-  const newUser = await insertUser({
+  const result = await insertUser({
     name,
     email,
     role,
     cellphone
   });
 
-  res.status(201).json(newUser);
+  if (!result.wasCreated) {
+    return res.status(200).json({
+      message: "User already exists",
+      user: result.user
+    });
+  }
+
+  res.status(201).json(result.user);
 }
 
 export async function updateUser(req, res) {

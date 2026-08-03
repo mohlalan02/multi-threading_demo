@@ -20,26 +20,43 @@ export async function findUserById(id) {
 export async function insertUser(userData) {
   const users = getUsersCollection();
 
+  const email = userData.email.toLowerCase();
+
   const newUser = {
     ...userData,
+    email,
     createdAt: new Date().toISOString()
   };
 
-  const result = await users.insertOne(newUser);
+  const result = await users.findOneAndUpdate(
+    { email },
+    {
+      $setOnInsert: newUser
+    },
+    {
+      upsert: true,
+      returnDocument: "after",
+      includeResultMetadata: true
+    }
+  );
 
-  const createdUser = {
-    _id: result.insertedId,
-    ...newUser
+  const user = result.value;
+  const wasCreated = Boolean(result.lastErrorObject?.upserted);
+
+  if (wasCreated) {
+    await publishEvent("UserCreated", {
+      eventId: `UserCreated-${user._id.toString()}`,
+      userId: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role
+    });
+  }
+
+  return {
+    user,
+    wasCreated
   };
-
-  await publishEvent("UserCreated", {
-    userId: createdUser._id.toString(),
-    name: createdUser.name,
-    email: createdUser.email,
-    role: createdUser.role
-  });
-
-  return createdUser;
 }
 
 export async function updateUserById(id, userData) {
